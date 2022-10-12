@@ -1,17 +1,17 @@
 class NavBar extends HTMLElement {
-  constructor() {
-    super();
+  connectedCallback() {
     this.render();
   }
 
   render() {
     this.innerHTML = `
-	<nav class="z-50 bg-gray-700 flex text-white justify-center align-items-center space-x-6 p-4 fixed inset-x-0">
-		<a href="">Home</a>
-		<a href="">Popular</a>
-		<a href="">Category</a>
-	</nav>
-	`;
+      <nav class="bg-slate-700 flex justify-center items-center p-6 space-x-10 fixed inset-x-0">
+        <a class="text-white text-4xl font-semibold inline-block">Moviesly</a>
+        <form>
+          <input class="rounded-md px-3 py-2 focus:outline-none focus:ring-4 transition duration-200 focus:ring-indigo-300" type="search" placeholder="Masukkan judul film..." aria-label="Search" id="search-element">
+          <button class="bg-indigo-400 px-5 py-2 rounded-md ml-2 hover:bg-indigo-300 text-white transition duration-200" type="submit" id="searchButton">Search</button>
+        </form>
+      </nav>`;
   }
 }
 
