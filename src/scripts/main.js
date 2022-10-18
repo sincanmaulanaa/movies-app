@@ -1,9 +1,11 @@
+import { async } from "regenerator-runtime";
+
 function main() {
   const imageBaseUrl = "https://image.tmdb.org/t/p";
   const apiKey = "33a9bd60c1dfc438942bec0a58378d26";
   const endpoint = "https://api.themoviedb.org/3/movie";
 
-  const getTopRatedMovies = async () => {
+  const getTopRatedMovies = async (genre) => {
     try {
       const request = await fetch(
         `${endpoint}/top_rated?api_key=${apiKey}&language=en-US`
@@ -13,7 +15,7 @@ function main() {
       if (responseJson.success) {
         showResponseMessage(responseJson.status_message);
       } else {
-        renderAllMovies(responseJson.results);
+        renderTopRatedMovies(responseJson.results, genre);
       }
     } catch (error) {
       showResponseMessage(error);
@@ -56,6 +58,16 @@ function main() {
     }
   };
 
+  const movieGenres = async () => {
+    const request = await fetch(
+      `https://api.themoviedb.org/3/genre/movie/list?api_key=${apiKey}&language=en-US`
+    );
+
+    const responseJson = await request.json();
+
+    getTopRatedMovies(responseJson);
+  };
+
   const showResponseMessage = (message = "Cek koneksi internet kamu") => {
     alert(message);
   };
@@ -72,6 +84,35 @@ function main() {
     } else {
       return value;
     }
+  };
+
+  const detail = async (id) => {
+    try {
+      const request = await fetch(
+        `https://api.themoviedb.org/3/movie/${id}?api_key=33a9bd60c1dfc438942bec0a58378d26`
+      );
+
+      const responseJson = await request.json();
+      if (responseJson.success) {
+        showResponseMessage(responseJson.status_message);
+      } else {
+        renderMovieDetail(responseJson.results);
+      }
+    } catch (error) {
+      showResponseMessage(error);
+    }
+  };
+
+  const renderMovieDetail = (details) => {
+    const detailElement = document.querySelector("#detail-container");
+
+    details?.forEach((movie) => {
+      detailElement.innerHTML += `
+    <div>
+      <h1 class="text-white">${movie.original_title}</h1>
+    </div>
+  `;
+    });
   };
 
   const renderFoundMovie = (results) => {
@@ -105,8 +146,9 @@ function main() {
     });
   };
 
-  const renderAllMovies = (movies) => {
+  const renderTopRatedMovies = (movies, genres) => {
     const topRatedMovies = document.querySelector("#top-rated-movies");
+    //console.log(genres);
 
     movies.forEach((movie, index) => {
       if (index <= 3) {
@@ -123,6 +165,7 @@ function main() {
                 movie.overview,
                 30
               )}....</p>
+              <span></span>
           </div>
         </a>
         `;
@@ -152,21 +195,19 @@ function main() {
               movie.overview,
               20
             )}....</p>
-            <a href="#" class="inline-flex items-center py-2 px-3 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+            <span class="block">Rate: ${movie.vote_average}</span>
+            <button id="more-button" onclick="${detail(
+              movie.id
+            )}" class="inline-flex items-end py-2 px-3 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
               Read more
             <svg aria-hidden="true" class="ml-2 -mr-1 w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
-            </a>
+            </button>
           </div>
 		    </div>
       `;
       }
     });
   };
-
-  // const cancelButton = () => {
-  //   const formContainer = document.querySelector("#form-container");
-
-  // };
 
   document
     .querySelector("#search-button")
@@ -187,11 +228,16 @@ function main() {
       const searchButton = document.querySelector("#search-button");
       let cancel = document.createElement("button");
       cancel.setAttribute("id", "cancel-button");
+      cancel.setAttribute(
+        "class",
+        "bg-red-400 px-5 py-2 rounded-md ml-2 hover:bg-red-300 text-white transition duration-200"
+      );
       cancel.innerText = "Cancel";
 
       searchButton.replaceWith(cancel);
     });
 
+  movieGenres();
   getTopRatedMovies();
   getPopularMovies();
 }
